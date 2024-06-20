@@ -1,0 +1,45 @@
+{
+  "name": "cylinder-picker",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "require": "./dist/index.cjs",
+  "module": "dist/index.mjs",
+  "umd": "./dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "umd": "./dist/index.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pjy0509/cylinder-picker.git"
+  },
+  "homepage": "https://pjy0509.github.io/example/cylinder-picker/",
+  "keywords": [
+    "cylinder",
+    "ios",
+    "picker"
+  ],
+  "devDependencies": {
+    "esbuild": "^0.21.4",
+    "glob": "^10.4.1",
+    "html-webpack-plugin": "^5.6.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5"
+  },
+  "bugs": {
+    "url": "https://github.com/pjy0509/cylinder-picker/issues"
+  }
+}
