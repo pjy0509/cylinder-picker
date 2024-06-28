@@ -21,8 +21,10 @@ export class HTMLCylinderPicker extends HTMLElement {
     private cylinder: HTMLElement | undefined;
     private loopSize = 0;
     private isAnimating = false;
+    private isRendering = false;
 
     private inertiaPan: (() => Promise<void>) | undefined;
+    private inertiaPanCallback: (() => Promise<void>) | undefined;
     private animationEndCallback: (() => void) | undefined;
     private onMouseAndTouchPanMove: ((event: Event) => Promise<void>) | undefined;
     private onMouseAndTouchPanEnd: (() => void) | undefined;
@@ -76,6 +78,17 @@ export class HTMLCylinderPicker extends HTMLElement {
     set infinite(value: boolean) {
         this.$infinite = value;
         this.render();
+    }
+
+    set list(values: string[]) {
+        this.innerHTML = ``;
+
+        let html = ``;
+        for (const value of values) {
+            html += `<li>${value}</li>`;
+        }
+
+        this.innerHTML += html;
     }
 
     getAttributeBoolean(qualifiedName: string) {
@@ -189,6 +202,8 @@ export class HTMLCylinderPicker extends HTMLElement {
             .then(() => {
                 if (!this.shadowRoot) return;
 
+                this.isRendering = true;
+
                 const liElements = Array.from(this.querySelectorAll('li'));
                 this.$length = liElements.length;
 
@@ -201,6 +216,7 @@ export class HTMLCylinderPicker extends HTMLElement {
 user-select:none;
 }
 :host [data-cylinder-container] {
+margin-top: 0.2em;
 position: relative;
 height: 10.325em;
 overflow: hidden;
@@ -306,7 +322,7 @@ ${
                 if (!this.disabled) {
                     this.addEvent();
                 }
-            });
+            }).then(() => this.isRendering = true);
     }
 
     private setupCylinder(value: number) {
@@ -314,6 +330,8 @@ ${
 
         const onClickChild = async (element: Element) => {
             if (!this.cylinder) return;
+
+            this.inertiaPan = undefined;
 
             const currentTarget = this.cylinder.querySelector('[data-cylinder-depth="0"]');
 
@@ -323,7 +341,7 @@ ${
                 const currentIndex = children.findIndex(child => child === currentTarget);
 
                 if (selectedIndex > -1 && currentIndex > -1) {
-                    await this.next(selectedIndex - currentIndex, 300);
+                    await this.next(selectedIndex - currentIndex);
                 }
             }
         }
@@ -351,7 +369,7 @@ ${
             for (let element of Array.from(this.cylinder.children)) {
                 if (element instanceof HTMLElement) {
                     element.setAttribute('data-cylinder-depth', String(i - this.$length * this.loopSize));
-                    element.onclick = () => onClickChild(element);
+                    element.onclick = element.ontouchend = () => onClickChild(element);
                     i++;
                 }
             }
@@ -373,12 +391,25 @@ ${
             for (let element of Array.from(this.cylinder.children)) {
                 if (element instanceof HTMLElement) {
                     element.setAttribute('data-cylinder-depth', String(i - 3 - value));
-                    element.onclick = () => onClickChild(element);
+                    element.onclick = element.ontouchend = () => onClickChild(element);
                     i++;
                 }
             }
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.725}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.72433102253}em)`;
         }
+    }
+
+    stopInertia() {
+        return new Promise<void>(resolve => {
+            if (this.inertiaPan) {
+                this.inertiaPanCallback = () => new Promise(() => {
+                    resolve();
+                });
+                this.inertiaPan = undefined;
+            } else {
+                resolve();
+            }
+        });
     }
 
     private didLoad() {
@@ -410,9 +441,9 @@ ${
         if (!this.cylinder) return;
 
         if (this.$infinite) {
-            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.725}em))`;
+            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.72433102253}em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.725}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.72433102253}em)`;
         }
     }
 
@@ -439,7 +470,7 @@ ${
 
         for (const element of [this.cylinder, ...Array.from(this.cylinder.children)]) {
             if (element instanceof HTMLElement) {
-                element.style.transition = `all ${speed}ms cubic-bezier(0.2, 1, 0.2, 1) 0s`
+                element.style.transition = `all ${speed}ms linear`
             }
         }
     }
@@ -451,7 +482,7 @@ ${
         return reverse < right ? -reverse : right;
     }
 
-    private next(delta: number, speed: number = 300, force?: boolean) {
+    private next(delta: number, speed: number = 150, force?: boolean) {
         return new Promise<this>(resolve => {
             if (!force && (!this.cylinder || this.$length === 0 || this.isAnimating)) {
                 resolve(this);
@@ -471,8 +502,9 @@ ${
 
             const modded = this.$length === 1 ? sign : delta % this.$length;
             this.$value = (this.$value + modded + this.$length) % this.$length;
+            const speedByDelta = Math.abs(delta) * speed;
 
-            this.updateAnimationSpeed(speed);
+            this.updateAnimationSpeed(speedByDelta);
             this.updateCylinderChildren(modded);
             this.updateCylinderPosition(modded);
 
@@ -490,7 +522,7 @@ ${
                     this.updateCylinderChildren(0);
                     resolve(this);
                 })
-            }, speed);
+            }, speedByDelta);
         });
     }
 
@@ -508,7 +540,7 @@ ${
         if (this.$infinite) {
             this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + 4.425em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.725}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.72433102253}em)`;
         }
     }
 
@@ -540,6 +572,7 @@ ${
             event.preventDefault();
 
             if (event instanceof WheelEvent) {
+                this.inertiaPan = undefined;
                 await nextByWheelDy(event.deltaY);
             }
         }
@@ -550,7 +583,7 @@ ${
 
         const nextByPanDy = async (dy: number, speed?: number) => {
             if (!speed) {
-                speed = 250 / Math.abs(dy);
+                speed = 125 / Math.abs(dy);
             }
 
             await this.next(-Math.sign(dy), speed);
@@ -560,7 +593,7 @@ ${
         }
 
         const nextByWheelDy = async (dy: number) => {
-            await this.next(Math.sign(dy), Math.min(200, 20000 / Math.abs(dy)));
+            await this.next(Math.sign(dy), Math.min(100, 10000 / Math.abs(dy)));
         }
 
         const inertiaPan = async () => {
@@ -568,12 +601,17 @@ ${
                 lastPanDy = 10 * Math.sign(lastPanDy);
             }
 
-            if (Math.abs(lastPanDy) > 1) {
-                lastPanDy = lastPanDy * 0.75;
+            if (Math.abs(lastPanDy) > 0.5) {
+                lastPanDy = lastPanDy * 0.875;
                 await nextByPanDy(lastPanDy);
             } else {
                 lastPanDy = 0;
                 this.inertiaPan = undefined;
+
+                if (this.inertiaPanCallback) {
+                    await this.inertiaPanCallback();
+                    this.inertiaPanCallback = undefined;
+                }
             }
         }
     }
