@@ -370,8 +370,11 @@ ${
             for (let element of Array.from(this.cylinder.children)) {
                 if (element instanceof HTMLElement) {
                     element.setAttribute('data-cylinder-depth', String(i - this.$length * this.loopSize));
-                    element.onclick = element.ontouchend = () => onClickChild(element);
                     i++;
+
+                    if (!this.$disabled) {
+                        element.onclick = element.ontouchend = () => onClickChild(element);
+                    }
                 }
             }
             this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + 4.425em))`;
@@ -392,8 +395,11 @@ ${
             for (let element of Array.from(this.cylinder.children)) {
                 if (element instanceof HTMLElement) {
                     element.setAttribute('data-cylinder-depth', String(i - 3 - value));
-                    element.onclick = element.ontouchend = () => onClickChild(element);
                     i++;
+
+                    if (!this.$disabled) {
+                        element.onclick = element.ontouchend = () => onClickChild(element);
+                    }
                 }
             }
             this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.72433102253}em)`;
