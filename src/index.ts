@@ -233,6 +233,7 @@ transition: opacity 0.1s;
 }
 :host [data-cylinder][data-cylinder-disabled] {
 user-select: none;
+opacity: 0.5;
 }
 :host [data-cylinder] li {
 top: 0;
