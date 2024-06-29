@@ -410,7 +410,7 @@ ${
                     }
                 }
             }
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.725}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.7248678414096916}em)`;
         }
     }
 
@@ -456,9 +456,9 @@ ${
         if (!this.cylinder) return;
 
         if (this.$infinite) {
-            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.725}em))`;
+            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.7248678414096916}em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.725}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.7248678414096916}em)`;
         }
     }
 
@@ -555,7 +555,7 @@ ${
         if (this.$infinite) {
             this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + 4.425em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.725}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.7248678414096916}em)`;
         }
     }
 
