@@ -20,16 +20,16 @@ export class HTMLCylinderPicker extends HTMLElement {
     private observer: MutationObserver | undefined;
     private cylinder: HTMLElement | undefined;
     private loopSize = 0;
-    private isAnimating = false;
     private isRendering = false;
 
     private inertiaPan: (() => Promise<void>) | undefined;
-    private inertiaPanCallback: (() => Promise<void>) | undefined;
     private animationEndCallback: (() => void) | undefined;
     private onMouseAndTouchPanMove: ((event: Event) => Promise<void>) | undefined;
     private onMouseAndTouchPanEnd: (() => void) | undefined;
     private onWheel: ((event: Event) => Promise<void>) | undefined;
 
+    private $inertiaPanCallback: (() => any) | undefined;
+    private $isAnimating = false;
     private $length = 0;
     private $value: number = 0;
     private $curvature: number = 20;
@@ -42,6 +42,10 @@ export class HTMLCylinderPicker extends HTMLElement {
 
     get length() {
         return this.$length;
+    }
+
+    get isAnimating() {
+        return this.$isAnimating;
     }
 
     get value() {
@@ -89,6 +93,10 @@ export class HTMLCylinderPicker extends HTMLElement {
         }
 
         this.innerHTML += html;
+    }
+
+    set inertiaPanCallback(value: (() => Promise<void>)) {
+        this.$inertiaPanCallback = value;
     }
 
     getAttributeBoolean(qualifiedName: string) {
@@ -351,7 +359,7 @@ ${
             this.animationEndCallback = () => this.updateCylinderChildren(0);
         }
 
-        this.isAnimating = false;
+        this.$isAnimating = false;
 
         if (this.infinite) {
             const children = [];
@@ -402,14 +410,14 @@ ${
                     }
                 }
             }
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.72433102253}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.725}em)`;
         }
     }
 
     stopInertia() {
         return new Promise<void>(resolve => {
             if (this.inertiaPan) {
-                this.inertiaPanCallback = () => new Promise(() => {
+                this.$inertiaPanCallback = () => new Promise(() => {
                     resolve();
                 });
                 this.inertiaPan = undefined;
@@ -448,9 +456,9 @@ ${
         if (!this.cylinder) return;
 
         if (this.$infinite) {
-            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.72433102253}em))`;
+            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.725}em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.72433102253}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.725}em)`;
         }
     }
 
@@ -491,12 +499,12 @@ ${
 
     private next(delta: number, speed: number = 150, force?: boolean) {
         return new Promise<this>(resolve => {
-            if (!force && (!this.cylinder || this.$length === 0 || this.isAnimating)) {
+            if (!force && (!this.cylinder || this.$length === 0 || this.$isAnimating)) {
                 resolve(this);
                 return;
             }
 
-            this.isAnimating = true;
+            this.$isAnimating = true;
 
             const sign = Math.sign(delta);
             delta = Math.round(delta);
@@ -525,7 +533,7 @@ ${
                     this.animationEndCallback = undefined;
                 }
                 setTimeout(() => {
-                    this.isAnimating = false;
+                    this.$isAnimating = false;
                     this.updateCylinderChildren(0);
                     resolve(this);
                 })
@@ -547,7 +555,7 @@ ${
         if (this.$infinite) {
             this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + 4.425em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.72433102253}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.725}em)`;
         }
     }
 
@@ -615,9 +623,9 @@ ${
                 lastPanDy = 0;
                 this.inertiaPan = undefined;
 
-                if (this.inertiaPanCallback) {
-                    await this.inertiaPanCallback();
-                    this.inertiaPanCallback = undefined;
+                if (this.$inertiaPanCallback) {
+                    await this.$inertiaPanCallback();
+                    this.$inertiaPanCallback = undefined;
                 }
             }
         }
