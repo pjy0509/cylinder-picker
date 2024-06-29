@@ -1,6 +1,6 @@
 {
   "name": "cylinder-picker",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
