@@ -21,6 +21,7 @@ export class HTMLCylinderPicker extends HTMLElement {
     private cylinder: HTMLElement | undefined;
     private loopSize = 0;
     private isRendering = false;
+    private isPanning = false;
 
     private inertiaPan: (() => Promise<void>) | undefined;
     private animationEndCallback: (() => void) | undefined;
@@ -341,6 +342,11 @@ ${
         const onClickChild = async (element: Element) => {
             if (!this.cylinder) return;
 
+            if (this.isPanning) {
+                this.isPanning = false;
+                return;
+            }
+
             this.inertiaPan = undefined;
 
             const currentTarget = this.cylinder.querySelector('[data-cylinder-depth="0"]');
@@ -382,7 +388,7 @@ ${
                     i++;
 
                     if (!this.$disabled) {
-                        element.onclick = () => onClickChild(element);
+                        element.onclick = element.ontouchend = () => onClickChild(element);
                     }
                 }
             }
@@ -407,11 +413,11 @@ ${
                     i++;
 
                     if (!this.$disabled) {
-                        element.onclick = () => onClickChild(element);
+                        element.onclick = element.ontouchend = () => onClickChild(element);
                     }
                 }
             }
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.7248678414096916}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.724328}em)`;
         }
     }
 
@@ -457,9 +463,9 @@ ${
         if (!this.cylinder) return;
 
         if (this.$infinite) {
-            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.7248678414096916}em))`;
+            this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + ${4.425 -nth * 1.724328}em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.7248678414096916}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 - this.$value * 1.724328}em)`;
         }
     }
 
@@ -556,7 +562,7 @@ ${
         if (this.$infinite) {
             this.cylinder.style.transform = `translateY(calc(-${this.loopSize / (this.loopSize * 2 + 1) * 100}% + 4.425em))`;
         } else {
-            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.7248678414096916}em)`;
+            this.cylinder.style.transform = `translateY(${-0.75 + -this.$value * 1.724328}em)`;
         }
     }
 
@@ -573,6 +579,11 @@ ${
                     lastPanDy = last.dy;
                     sumOfPanDy += lastPanDy;
                     if (Math.abs(sumOfPanDy) >= 10) {
+
+                        if (event instanceof ExtendedTouchEvent) {
+                            this.isPanning = true;
+                        }
+
                         sumOfPanDy = 0;
                         nextByPanDy(lastPanDy, 100).then();
                         return;

@@ -17,10 +17,11 @@ cdn
 ## Report errors and suggestions
 ### [Gmail](mailto:qkrwnss0509@gmail.com?subject=Report_errors_and_suggestions)
 ## Change log
-| Version | Log                                                                           |
-|---------|-------------------------------------------------------------------------------|
-| 1.0.0   | release                                                                       |
-| 1.0.67  | Correction of UI errors on a cylinder-picker with a large amount of elements  |
+| Version | Log                                                                          |
+|---------|------------------------------------------------------------------------------|
+| 1.0.0   | Release                                                                      |
+| 1.0.67  | Correction of UI errors on a cylinder-picker with a large amount of elements |
+| 1.0.74  | Improve the experience of using Touch-pan gestures                           |
 ## Usage
 Add the custom element to your HTML file:
 
