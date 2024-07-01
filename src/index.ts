@@ -24,9 +24,10 @@ export class HTMLCylinderPicker extends HTMLElement {
 
     private inertiaPan: (() => Promise<void>) | undefined;
     private animationEndCallback: (() => void) | undefined;
-    private onMouseAndTouchPanMove: ((event: Event) => Promise<void>) | undefined;
-    private onMouseAndTouchPanEnd: (() => void) | undefined;
-    private onWheel: ((event: Event) => Promise<void>) | undefined;
+    private onMouseAndTouchPanMove: ((event: Event) => void) | undefined;
+    private onMouseAndTouchPanEnd: ((event: Event) => void) | undefined;
+    private onMouseDownOrTouchStart: ((event: Event) => void) | undefined;
+    private onWheel: ((event: Event) => void) | undefined;
 
     private $inertiaPanCallback: (() => any) | undefined;
     private $isAnimating = false;
@@ -302,20 +303,20 @@ ${
                                             const key = split.splice(0, 1).join('').trim();
                                             const value = split.join('').trim();
                                             const important = value.endsWith('!important');
-                                            return {key, value, important}
+                                            return {key, value, important};
                                         })
                                         .reduce((current: any, previous) => {
                                             if (previous.important || !current[previous.key]) {
-                                                current[previous.key] = previous.value
+                                                current[previous.key] = previous.value;
                                             }
-                                            return current
+                                            return current;
                                         }, {})
                                 )
                                     .map(entry => entry[0] + ':' + entry[1] + ';')
                                     .join('')
                             );
 
-                            return li.outerHTML
+                            return li.outerHTML;
                         })
                         .join('')
                 }
@@ -345,7 +346,7 @@ ${
             const currentTarget = this.cylinder.querySelector('[data-cylinder-depth="0"]');
 
             if (currentTarget) {
-                const children = Array.from(this.cylinder.children)
+                const children = Array.from(this.cylinder.children);
                 const selectedIndex = children.findIndex(child => !child.hasAttribute('data-cylinder-padding') && child === element);
                 const currentIndex = children.findIndex(child => child === currentTarget);
 
@@ -381,7 +382,7 @@ ${
                     i++;
 
                     if (!this.$disabled) {
-                        element.onclick = element.ontouchend = () => onClickChild(element);
+                        element.onclick = () => onClickChild(element);
                     }
                 }
             }
@@ -406,7 +407,7 @@ ${
                     i++;
 
                     if (!this.$disabled) {
-                        element.onclick = element.ontouchend = () => onClickChild(element);
+                        element.onclick = () => onClickChild(element);
                     }
                 }
             }
@@ -564,7 +565,7 @@ ${
         let lastPanDy = 0;
         let sumOfPanDy = 0;
 
-        this.onMouseAndTouchPanMove = async (event: Event) => {
+        this.onMouseAndTouchPanMove = (event: Event) => {
             if (event instanceof ExtendedMouseEvent || event instanceof ExtendedTouchEvent) {
                 const last = event.paths.last;
 
@@ -573,27 +574,33 @@ ${
                     sumOfPanDy += lastPanDy;
                     if (Math.abs(sumOfPanDy) >= 10) {
                         sumOfPanDy = 0;
-                        await nextByPanDy(lastPanDy, 100);
+                        nextByPanDy(lastPanDy, 100).then();
+                        return;
                     }
                 }
             }
         }
 
-        this.onMouseAndTouchPanEnd = () => {
+        this.onMouseAndTouchPanEnd = (event: Event) => {
             this.inertiaPan = () => inertiaPan();
         };
 
-        this.onWheel = async (event: Event) => {
+        this.onMouseDownOrTouchStart = (event: Event) => {
+            this.inertiaPan = undefined;
+        }
+
+        this.onWheel = (event: Event) => {
             event.preventDefault();
 
             if (event instanceof WheelEvent) {
                 this.inertiaPan = undefined;
-                await nextByWheelDy(event.deltaY);
+                nextByWheelDy(event.deltaY).then();
             }
         }
 
-        this.on(['mousepanmove', 'touchpanmove'], this.onMouseAndTouchPanMove);
-        this.on(['mousepanend', 'mousepanleave', 'touchpancancel', 'touchend'], this.onMouseAndTouchPanEnd);
+        this.on(['mousepanmove', 'touchpanmove'], this.onMouseAndTouchPanMove, {passive: true});
+        this.on(['mousepanend', 'mousepanleave', 'touchpancancel', 'touchpanend'], this.onMouseAndTouchPanEnd, {passive: true});
+        this.on(['mousedown', 'touchstart'], this.onMouseDownOrTouchStart, {passive: true});
         this.on(['wheel'], this.onWheel, {passive: false});
 
         const nextByPanDy = async (dy: number, speed?: number) => {
@@ -632,9 +639,10 @@ ${
     }
 
     private removeEvent() {
-        if (this.onMouseAndTouchPanMove) this.off(['mousepanmove', 'touchpanmove'], this.onMouseAndTouchPanMove);
-        if (this.onMouseAndTouchPanEnd) this.off(['mousepanend', 'mousepanleave', 'touchpancancel', 'touchend'], this.onMouseAndTouchPanEnd);
-        if (this.onWheel) this.off(['wheel'], this.onWheel, {passive: false});
+        if (this.onMouseAndTouchPanMove) this.off(['mousepanmove', 'touchpanmove'], this.onMouseAndTouchPanMove, {passive: true});
+        if (this.onMouseAndTouchPanEnd) this.off(['mousepanend', 'mousepanleave', 'touchpancancel', 'touchpanend'], this.onMouseAndTouchPanEnd, {passive: true});
+        if (this.onMouseDownOrTouchStart) this.on(['mousedown', 'touchstart'], this.onMouseDownOrTouchStart, {passive: true});
+        if (this.onWheel) this.off(['wheel'], this.onWheel, {passive: true});
     }
 }
 
