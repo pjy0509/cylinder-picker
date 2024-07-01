@@ -21,7 +21,7 @@ cdn
 |---------|------------------------------------------------------------------------------|
 | 1.0.0   | Release                                                                      |
 | 1.0.67  | Correction of UI errors on a cylinder-picker with a large amount of elements |
-| 1.0.74  | Improve the experience of using Touch-pan gestures                           |
+| 1.0.75  | Improve the experience of using Touch-pan gestures                           |
 ## Usage
 Add the custom element to your HTML file:
 

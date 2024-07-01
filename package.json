@@ -1,7 +1,7 @@
 {
   "name": "cylinder-picker",
-  "version": "1.0.74",
-  "description": "",
+  "version": "1.0.75",
+  "description": "The cylinder-picker library is a customizable, interactive cylindrical item picker for web applications, supporting features like infinite scroll, touch gestures, and dynamic updates.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node build.js"
